@@ -113,7 +113,7 @@
 <style lang="scss">
   // 自定义搜索样式
   .search-box {
-    // 粘性固定
+    // 粘性固定 
     position: sticky;
     top: 0;
     z-index: 999;
