@@ -1,5 +1,9 @@
 <template>
   <view>
+    <!-- 自定义组件样式 -->
+    <!-- <my-search :bgcolor="pink" :radius="0"></my-search> -->
+    <my-search @click="gotoSearch"></my-search>
+    
     <view class="scroll-view-container">
       <!-- 左侧滚动 -->
       <scroll-view class="left-scroll-view" scroll-y="true" :style="{height: wh + 'px'}">
@@ -44,7 +48,8 @@
       // 获取当前系统的信息
       const sysInfo = uni.getSystemInfoSync()
       // console.log(sysInfo)
-      this.wh = sysInfo.windowHeight
+      // -50 控制分类窗口的可用高度
+      this.wh = sysInfo.windowHeight - 50
       
       this.getCateList()
     },
@@ -67,6 +72,12 @@
       gotoGoodsList (item3) {
         uni.navigateTo({
           url:'/subpkg/goods_list/goods_list?cid=' + item3.cat_id
+        })
+      },
+      gotoSearch () {
+        // console.log('ok')
+        uni.navigateTo({
+          url: '/subpkg/search/search'
         })
       }
     }
