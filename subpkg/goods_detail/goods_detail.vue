@@ -1,6 +1,6 @@
 <template>
   <view>
-    轮播图显示页面
+    商品详情页
   </view>
 </template>
 
