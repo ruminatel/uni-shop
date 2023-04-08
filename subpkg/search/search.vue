@@ -18,11 +18,11 @@
       <!-- 搜索标题区域 -->
       <view class="history-title">
         <text>搜索历史</text>
-        <uni-icons type="trash" size="16"></uni-icons>
+        <uni-icons type="trash" size="16" @click="cleanHistory"></uni-icons>
       </view>
       <!-- 列表展示区域 -->
       <view class="history-list">
-        <uni-tag :text="item" v-for="(item,i) in historyList" :key="i"></uni-tag>
+        <uni-tag :text="item" v-for="(item,i) in historys" :key="i" @click="gotoGoodsList(item)"></uni-tag>
       </view>
     </view>
   </view>
@@ -39,8 +39,11 @@
         // 搜索结果列表
         searchResults: [],
         // 搜索关键词的历史列表
-        historyList: ['a', 'app', 'apple']
+        historyList: []
       };
+    },
+    onLoad() {
+      this.historyList = JSON.parse(uni.getStorageSync('kw') || '[]')
     },
     methods: {
       input(e) {
@@ -64,6 +67,9 @@
         // console.log(res)
         if(res.meta.status !== 200) return uni.$showMsg()
         this.searchResults = res.message
+        
+        // 1. 查询到搜索建议之后，调用 saveSearchHistory() 方法保存搜索关键词
+        this.saveSearchHistory()
       },
       // 点击建议列表 根据id跳转至商品详情页
       gotoDetail(item) {
@@ -71,6 +77,36 @@
         uni.navigateTo({
           url:'/subpkg/goods_detail/goods_detail?goods_id=' + item.goods_id
         })
+      },
+      // 2. 保存搜索关键词的方法
+      saveSearchHistory() {
+        // this.historyList.push(this.kw)
+        const set = new Set(this.historyList)
+        set.delete(this.kw)
+        set.add(this.kw)
+        // 将 Set 对象转化为 Array 数组
+        this.historyList = Array.from(set)
+        // console.log(this.historyList)
+        // 调用 uni.setStorageSync(key, value) 将搜索历史记录持久化存储到本地
+        uni.setStorageSync('kw',JSON.stringify(this.historyList))
+      },
+      // 清空搜索历史
+      cleanHistory() {
+        // 清空 data 中保存的搜索历史
+        this.historyList = []
+        // 清空本地存储中记录的搜索历史
+        uni.setStorageSync('kw','[]')
+      },
+      // 点击跳转到商品列表页面
+      gotoGoodsList(kw) {
+        uni.navigateTo({
+          url: '/subpkg/goods_list/goods_list?query=' + kw
+        })
+      }
+    },
+    computed: {
+      historys() {
+        return [...this.historyList].reverse()
       }
     }
   }
