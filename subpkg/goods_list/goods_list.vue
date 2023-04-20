@@ -2,21 +2,7 @@
   <view>
     <view class="goods-list">
       <block v-for="(goods,i) in goodsList" :key="i">
-        <view class="goods-item">
-          <!-- 左侧图片区域 -->
-          <view class="goods-item-left">
-            <image :src="goods.goods_small_logo || defaultPic" class="goods-pic"></image>
-          </view>
-          <!-- 右侧商品详细信息 -->
-          <view class="goods-item-right">
-            <!-- 商品标题 -->
-            <view class="goods-name">{{goods.goods_name}}</view>
-            <!-- 商品价格 -->
-            <view class="goods-info-box">
-              <view class="goods-price">￥{{goods.goods_price}}</view>
-            </view>
-          </view>
-        </view>
+       <my-goods :goods="goods"></my-goods>
       </block>
     </view>
   </view>
@@ -41,8 +27,8 @@
         goodsList: [],
         // 商品列表数据总条数
         total: 0,
-        // 默认的空图片
-        defaultPic: 'https://img3.doubanio.com/f/movie/8dd0c794499fe925ae2ae89ee30cd225750457b4/pics/movie/celebrity-default-medium.png'
+        // 节流阀 ,  是否正在请求数据
+        isloading: false
       };
     },
     onLoad(options) {
@@ -57,42 +43,31 @@
     methods: {
       // 获取商品列表数据
       async getgoodsList() {
+        // 获取数据前打开节流阀
+        this.isloading = true
         const {data : res} = await uni.$http.get('/api/public/v1/goods/search',this.queryObj)
+        // 关闭节流阀
+        this.isloading = false
         // console.log(res)
         if(res.meta.status !== 200) return this.$showMsg()
-        this.goodsList = res.message.goods
+        this.goodsList = [...this.goodsList,...res.message.goods]
         this.total = res.message.total
       }
+    },
+    // 监听上拉触底事件
+    onReachBottom () {
+      // 判断是否还有下一页数据
+      if(this.queryObj.pagenum * this.queryObj.pagesize >= this.total) return uni.$showMsg('数据全部加载完毕')
+      
+      // 判断是否正在请求其它数据，如果是，则不发起额外的请求
+      if(this.isloading) return 
+      // console.log('ok')
+      this.queryObj.pagenum ++
+      this.getgoodsList()
     }
   }
 </script>
 
 <style lang="scss">
-.goods-item {
-  display: flex;
-  padding: 10px 5px;
-  border-bottom: 1px solid #f0f0f0;
-  .goods-item-left {
-    margin-right: 5px;
-    .goods-pic {
-      width: 100px;
-      height: 100px;
-      display: block;
-    }
-  }
-  .goods-item-right {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    .goods-name {
-      font-size: 13px;
-    }
-    .goods-info-box {
-      .goods-price {
-        font-size: 16px;
-        color: #c00000;
-      }
-    }
-  }
-}
+
 </style>
