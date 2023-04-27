@@ -1,9 +1,9 @@
 <template>
   <view>
     <view class="goods-list">
-      <block v-for="(goods,i) in goodsList" :key="i">
+      <view v-for="(goods,i) in goodsList" :key="i" @click="gotoDetail(goods)">
        <my-goods :goods="goods"></my-goods>
-      </block>
+      </view>
     </view>
   </view>
 </template>
@@ -42,16 +42,23 @@
     },
     methods: {
       // 获取商品列表数据
-      async getgoodsList() {
+      async getgoodsList(cb) {
         // 获取数据前打开节流阀
         this.isloading = true
         const {data : res} = await uni.$http.get('/api/public/v1/goods/search',this.queryObj)
+        // 为下拉刷新,即可调用cb回调
+        cb && cb()
         // 关闭节流阀
         this.isloading = false
         // console.log(res)
         if(res.meta.status !== 200) return this.$showMsg()
         this.goodsList = [...this.goodsList,...res.message.goods]
         this.total = res.message.total
+      },
+      gotoDetail(goods) {
+        uni.navigateTo({
+          url: '/subpkg/goods_detail/goods_detail?goods_id=' + goods.goods_id
+        })
       }
     },
     // 监听上拉触底事件
@@ -64,6 +71,15 @@
       // console.log('ok')
       this.queryObj.pagenum ++
       this.getgoodsList()
+    },
+    // 下拉刷新
+    onPullDownRefresh () {
+      this.queryObj.pagenum = 1,
+      this.total = 0,
+      this.isloading = false,
+      this.goodsList = []
+      
+      this.getgoodsList(() => uni.stopPullDownRefresh())
     }
   }
 </script>
