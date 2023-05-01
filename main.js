@@ -1,4 +1,6 @@
 import App from './App'
+// 1. 导入 store 的实例对象
+import store from '@/store/store.js'
 
 // 按需导入$http对象
 import { $http } from '@escook/request-miniprogram'
@@ -62,7 +64,9 @@ try {
 } catch (error) { }
 
 const app = new Vue({
-  ...App
+  ...App,
+  // 2. 将 store 挂载到 Vue 实例上
+  store
 })
 app.$mount()
 // #endif
